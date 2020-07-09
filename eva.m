@@ -1,9 +1,10 @@
-function eva(name, crf)
-    name = strcat(strtrim(name), '.ppm');
-    src = imread(name);
+function eva(yuvname, crf)
+    yuvname = strtrim(yuvname);
+    src = imread(strrep(yuvname, 'yuv', ''));
     dst = {};
     for i = 1:length(crf)
-        dst{i} = imread(strcat(name, '_', int2str(crf(i)), '_rebuild.ppm'));
+        dst{i} = imread(strcat(yuvname, '_', int2str(crf(i)), '_rebuild.ppm'));
+        dst{i} = jpeg_ycbcr2rgb(dst{i});
     end
 
     headsize = 27 + 49 + 12;
@@ -15,7 +16,7 @@ function eva(name, crf)
     MOSssim = peaksnr;
     filenamestr = cell(1, length(crf));
     for i = 1:length(crf)
-        hevcfile = dir(strcat(name, '_', int2str(crf(i)), '.h265'));
+        hevcfile = dir(strcat(yuvname, '_', int2str(crf(i)), '.h265'));
         filenamestr(i) = {hevcfile.name};
         % dst_downsample = imread(file.name);
         % dst = inv_smooth(dst_downsample);
@@ -30,7 +31,7 @@ function eva(name, crf)
     compress_ratio = 1 ./ (filesize_KByts * 1024 / (1920 * 1080 * 3));
     tabletitle = {'filename', 'size_KB', 'compress_ratio', 'SNR', 'PSNR', 'SSIM', 'PSNR2MOS', 'SSIM2MOS'};
     csvdata = table(filenamestr(:), filesize_KByts(:), compress_ratio(:), snrval(:), peaksnr(:), ssimval(:), MOSpsnr(:), MOSssim(:), 'VariableNames', tabletitle);
-    writetable(csvdata, [name, '_evaluation.csv']);
+    writetable(csvdata, [yuvname, '_evaluation.csv']);
     % end
 
     recycle('on');

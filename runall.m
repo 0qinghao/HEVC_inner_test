@@ -19,11 +19,25 @@ name = {
 % ' wedding'
     };
 
-Q = 10:25;
+yuvname = name;
 for i = 1:length(name)
+    yuvname{i} = strcat(name{i}, 'yuv.ppm');
+    rgb = imread([strtrim(name{i}), '.ppm']);
+    yuv = jpeg_rgb2ycbcr(rgb);
+    imwrite(yuv, strtrim(yuvname{i}));
+end
+% for i = 1:length(name)
+%     rgbname = [strtrim(name{i}), '.ppm'];
+%     yuvname = [strtrim(name{i}), 'yuv.ppm'];
+%     rgb = imread(rgbname);
+%     yuv = jpeg_rgb2ycbcr(rgb);
+%     imwrite(yuv, yuvname);
+% end
+Q = 10:25;
+for i = 1:length(yuvname)
     parfor crf = Q
         crf_str = [' ', int2str(crf)];
-        system(string(strcat('wsl source codec265.sh', name(i), '.ppm', crf_str)));
+        system(string(strcat('wsl source codec265.sh', yuvname(i), crf_str)));
     end
-    eva(name{i}, Q);
+    eva(yuvname{i}, Q);
 end
